@@ -255,9 +255,6 @@ See ProtectedPay in action:
 
 Need assistance or have questions? We're here to help:
 
-- **Email**: [protectedpay.business@gmail.com](mailto:protectedpay.business@gmail.com)
-- **Report Issues**: [GitHub Issues](https://github.com/username/protectedpay/issues)
-
 ---
 
 <div align="center">

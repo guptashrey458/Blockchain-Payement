@@ -1,7 +1,7 @@
 // context/WalletContext.tsx
 
 'use client'
-
+import { sepolia } from 'wagmi/chains';
 import React, { ReactNode, useEffect, useState } from 'react';
 import { createConfig, WagmiProvider, useAccount, useBalance as useWagmiBalance } from 'wagmi';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -288,7 +288,7 @@ const electroneumTestnet = {
   testnet: true,
 } as const;
 
-const chains = [electroneumMainnet, electroneumTestnet, neoXTestnet, eduChainTestnet, kaiatestnet, ancient8Testnet, mantleSepoliaTestnet, lineaSepoliaTestnet, creatorChainTestnet, eduChainMainnet] as const; 
+const chains = [sepolia, electroneumMainnet, electroneumTestnet, neoXTestnet, eduChainTestnet, kaiatestnet, ancient8Testnet, mantleSepoliaTestnet, lineaSepoliaTestnet, creatorChainTestnet, eduChainMainnet] as const; 
 
 const projectId = process.env.NEXT_PUBLIC_WC_PROJECT_ID || 'b8ad206ba9492e6096fa0aa0f868586c';
 
@@ -308,6 +308,7 @@ const wagmiConfig = createConfig({
   connectors,
   chains,
   transports: {
+    [sepolia.id]:  http(process.env.NEXT_PUBLIC_SEPOLIA_RPC || 'https://ethereum-sepolia.publicnode.com'),
     [electroneumMainnet.id]: http(),
     [electroneumTestnet.id]: http(),
     [eduChainTestnet.id]: http(),

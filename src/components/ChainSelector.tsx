@@ -16,6 +16,15 @@ export interface ChainInfo {
 
 export const supportedChains: ChainInfo[] = [
   {
+    id: 11155111,
+    hexId: '0xaa36a7',
+    name: 'Ethereum Sepolia',
+    icon: '/chains/linea.png', // Using Linea icon as placeholder for Ethereum
+    symbol: 'SepoliaETH',
+    rpcUrl: 'https://ethereum-sepolia.publicnode.com',
+    blockExplorerUrl: 'https://sepolia.etherscan.io'
+  },
+  {
     id: 52014,
     hexId: '0xCB2E',
     name: 'Electroneum Mainnet',

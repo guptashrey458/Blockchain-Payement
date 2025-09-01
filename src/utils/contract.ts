@@ -1,1647 +1,698 @@
-import { ethers } from 'ethers';
+// src/utils/contract.ts
+import { ethers } from 'ethers'
+import { getDeployment } from './deployments'
+import { decodeRecipient } from './recipient'
 
-const CONTRACT_ADDRESSES = {
-	12227332: '0xF93132d75c20EfeD556EC2Bc5aC777750665D3a9', // NeoX Testnet
-	656476: '0x03c4fb7563e593ca0625C1c64959AC56081785cE', // EduChain Testnet
-	41923: '0x5bA4CB3929C75DF47B8b5E6ca6c7414a5E1a3DB0', // Educhain Mainnet
-	1001: '0xca36dd890f987edce1d6d7c74fb9df627c216bf6', // KAIA Testnet
-	41: '0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6', // Telos Testnet
-	28122024: '0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6', // Ancient8 Testnet
-	5003: '0x74689f77e03D8213DF5037b681F05b80bAAe3504', // Mantle Testnet
-	59141: '0xd150d34976Ac00D5e892aDFE565ba47de11c2656', // Linea Testnet
-	4157: '0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6', // CrossFi Testnet
-	66665: '0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6', // Creator Testnet
-	5201420: '0x186a621d17819788c9aa170065ff3bbEEF37E7B7', // Electroneum Testnet
-	52014: '0xC27106b03AadbFFec555C64F461784fCE850A51b', // Electroneum Mainnet
-} as const;
-  
-const CONTRACT_ABI = [
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_potId",
-				"type": "bytes32"
-			}
-		],
-		"name": "breakPot",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_senderAddress",
-				"type": "address"
-			}
-		],
-		"name": "claimTransferByAddress",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_transferId",
-				"type": "bytes32"
-			}
-		],
-		"name": "claimTransferById",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_senderUsername",
-				"type": "string"
-			}
-		],
-		"name": "claimTransferByUsername",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_paymentId",
-				"type": "bytes32"
-			}
-		],
-		"name": "contributeToGroupPayment",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_potId",
-				"type": "bytes32"
-			}
-		],
-		"name": "contributeToSavingsPot",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_recipient",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_numParticipants",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_remarks",
-				"type": "string"
-			}
-		],
-		"name": "createGroupPayment",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_name",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "_targetAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "_remarks",
-				"type": "string"
-			}
-		],
-		"name": "createSavingsPot",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "paymentId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "GroupPaymentCompleted",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "paymentId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "contributor",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "GroupPaymentContributed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "paymentId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "creator",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "totalAmount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "numParticipants",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"name": "GroupPaymentCreated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "potId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "PotBroken",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "potId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "contributor",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "PotContribution",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_transferId",
-				"type": "bytes32"
-			}
-		],
-		"name": "refundTransfer",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_username",
-				"type": "string"
-			}
-		],
-		"name": "registerUsername",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "potId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "targetAmount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"name": "SavingsPotCreated",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_recipient",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "_remarks",
-				"type": "string"
-			}
-		],
-		"name": "sendToAddress",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_username",
-				"type": "string"
-			},
-			{
-				"internalType": "string",
-				"name": "_remarks",
-				"type": "string"
-			}
-		],
-		"name": "sendToUsername",
-		"outputs": [],
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "transferId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "TransferClaimed",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "transferId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"name": "TransferInitiated",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "bytes32",
-				"name": "transferId",
-				"type": "bytes32"
-			},
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			}
-		],
-		"name": "TransferRefunded",
-		"type": "event"
-	},
-	{
-		"anonymous": false,
-		"inputs": [
-			{
-				"indexed": true,
-				"internalType": "address",
-				"name": "userAddress",
-				"type": "address"
-			},
-			{
-				"indexed": false,
-				"internalType": "string",
-				"name": "username",
-				"type": "string"
-			}
-		],
-		"name": "UserRegistered",
-		"type": "event"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_paymentId",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "address",
-				"name": "_user",
-				"type": "address"
-			}
-		],
-		"name": "getGroupPaymentContribution",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_paymentId",
-				"type": "bytes32"
-			}
-		],
-		"name": "getGroupPaymentDetails",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "creator",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amountPerPerson",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "numParticipants",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amountCollected",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum ProtectedPay.GroupPaymentStatus",
-				"name": "status",
-				"type": "uint8"
-			},
-			{
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_sender",
-				"type": "address"
-			}
-		],
-		"name": "getPendingTransfers",
-		"outputs": [
-			{
-				"internalType": "bytes32[]",
-				"name": "",
-				"type": "bytes32[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_potId",
-				"type": "bytes32"
-			}
-		],
-		"name": "getSavingsPotDetails",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "targetAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "currentAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum ProtectedPay.PotStatus",
-				"name": "status",
-				"type": "uint8"
-			},
-			{
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_transferId",
-				"type": "bytes32"
-			}
-		],
-		"name": "getTransferDetails",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum ProtectedPay.TransferStatus",
-				"name": "status",
-				"type": "uint8"
-			},
-			{
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_userAddress",
-				"type": "address"
-			}
-		],
-		"name": "getUserByAddress",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_username",
-				"type": "string"
-			}
-		],
-		"name": "getUserByUsername",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_userAddress",
-				"type": "address"
-			}
-		],
-		"name": "getUserProfile",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "username",
-				"type": "string"
-			},
-			{
-				"internalType": "bytes32[]",
-				"name": "transferIds",
-				"type": "bytes32[]"
-			},
-			{
-				"internalType": "bytes32[]",
-				"name": "groupPaymentIds",
-				"type": "bytes32[]"
-			},
-			{
-				"internalType": "bytes32[]",
-				"name": "participatedGroupPayments",
-				"type": "bytes32[]"
-			},
-			{
-				"internalType": "bytes32[]",
-				"name": "savingsPotIds",
-				"type": "bytes32[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "_userAddress",
-				"type": "address"
-			}
-		],
-		"name": "getUserTransfers",
-		"outputs": [
-			{
-				"components": [
-					{
-						"internalType": "address",
-						"name": "sender",
-						"type": "address"
-					},
-					{
-						"internalType": "address",
-						"name": "recipient",
-						"type": "address"
-					},
-					{
-						"internalType": "uint256",
-						"name": "amount",
-						"type": "uint256"
-					},
-					{
-						"internalType": "uint256",
-						"name": "timestamp",
-						"type": "uint256"
-					},
-					{
-						"internalType": "enum ProtectedPay.TransferStatus",
-						"name": "status",
-						"type": "uint8"
-					},
-					{
-						"internalType": "string",
-						"name": "remarks",
-						"type": "string"
-					}
-				],
-				"internalType": "struct ProtectedPay.Transfer[]",
-				"name": "",
-				"type": "tuple[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"name": "groupPayments",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "paymentId",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "address",
-				"name": "creator",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "totalAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amountPerPerson",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "numParticipants",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amountCollected",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			},
-			{
-				"internalType": "enum ProtectedPay.GroupPaymentStatus",
-				"name": "status",
-				"type": "uint8"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "_paymentId",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "address",
-				"name": "_user",
-				"type": "address"
-			}
-		],
-		"name": "hasContributedToGroupPayment",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"name": "pendingTransfersBySender",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"name": "savingsPots",
-		"outputs": [
-			{
-				"internalType": "bytes32",
-				"name": "potId",
-				"type": "bytes32"
-			},
-			{
-				"internalType": "address",
-				"name": "owner",
-				"type": "address"
-			},
-			{
-				"internalType": "string",
-				"name": "name",
-				"type": "string"
-			},
-			{
-				"internalType": "uint256",
-				"name": "targetAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "currentAmount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum ProtectedPay.PotStatus",
-				"name": "status",
-				"type": "uint8"
-			},
-			{
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "bytes32",
-				"name": "",
-				"type": "bytes32"
-			}
-		],
-		"name": "transfers",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "sender",
-				"type": "address"
-			},
-			{
-				"internalType": "address",
-				"name": "recipient",
-				"type": "address"
-			},
-			{
-				"internalType": "uint256",
-				"name": "amount",
-				"type": "uint256"
-			},
-			{
-				"internalType": "uint256",
-				"name": "timestamp",
-				"type": "uint256"
-			},
-			{
-				"internalType": "enum ProtectedPay.TransferStatus",
-				"name": "status",
-				"type": "uint8"
-			},
-			{
-				"internalType": "string",
-				"name": "remarks",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"name": "usernameToAddress",
-		"outputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "address",
-				"name": "",
-				"type": "address"
-			}
-		],
-		"name": "users",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "username",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	}
-];
+/* ------------------------------ 1) ABIs (min) ----------------------------- */
+/** UsernameRegistry */
+const ABI_UsernameRegistry = [
+  'function register(string name) external',
+  'function transfer(string name, address to) external',
+  'function setPrimary(string name) external',
+  'function resolve(string name) external view returns (address)',
+  'function ownerOf(bytes32) external view returns (address)',
+  'function primaryOf(address) external view returns (bytes32)',
+  'event Registered(bytes32 indexed nameHash, string name, address indexed owner)',
+  'event Transferred(bytes32 indexed nameHash, address indexed from, address indexed to)',
+  'event PrimarySet(address indexed user, bytes32 indexed nameHash)',
+]
 
-// Types for all events and returns
-interface TransferEvent {
-	type: 'TransferInitiated' | 'TransferClaimed' | 'TransferRefunded';
-	transferId: string;
-	sender?: string;
-	recipient?: string;
-	amount: string;
-	remarks?: string;
-	event: ethers.Event;
+/** ProtectedEscrow */
+const ABI_ProtectedEscrow = [
+  'function createTransfer(address token,uint256 amount,uint8 rtype,bytes32 recipient,uint64 expiry,bytes32 hashlock,string note) payable returns (uint256 id)',
+  'function claim(uint256 id) external',
+  'function claimBySecret(uint256 id, bytes preimage, address recipient) external',
+  'function refund(uint256 id) external',
+  'function transfers(uint256) external view returns (address sender,address token,uint256 amount,uint64 expiry,bytes32 recipient,uint8 rtype,bytes32 hashlock,bool claimed)',
+  'function nextId() external view returns (uint256)',
+  'event TransferCreated(uint256 indexed id,address indexed sender,address token,uint256 amount,uint8 rtype,bytes32 recipient,uint64 expiry,bytes32 hashlock,string note)',
+  'event Claimed(uint256 indexed id,address indexed to)',
+  'event Refunded(uint256 indexed id,address indexed to)',
+]
+
+/** GroupPool */
+const ABI_GroupPool = [
+  'function createPool(address token,address recipient,uint256 target,uint64 deadline,string metadata) returns (uint256 id)',
+  'function contribute(uint256 id,uint256 amount) payable',
+  'function cancel(uint256 id)',
+  'function refund(uint256 id)',
+  'function pools(uint256) external view returns (address creator,address token,address recipient,uint256 target,uint256 total,uint64 deadline,bool closed)',
+  'function contributions(uint256,address) external view returns (uint256)',
+  'function nextPoolId() external view returns (uint256)',
+  'event PoolCreated(uint256 indexed id,address indexed creator,address token,address recipient,uint256 target,uint64 deadline,string metadata)',
+  'event Contributed(uint256 indexed id,address indexed from,uint256 amount,uint256 newTotal)',
+  'event Distributed(uint256 indexed id,address indexed recipient,uint256 amount)',
+  'event Refunded(uint256 indexed id,address indexed to,uint256 amount)',
+  'event Cancelled(uint256 indexed id)',
+]
+
+/** SavingsPot */
+const ABI_SavingsPot = [
+  'function setAdapter(address adapter) external',
+  'function createPot(address token,uint256 target) returns (uint256 id)',
+  'function deposit(uint256 id,uint256 amount) payable',
+  'function withdraw(uint256 id,uint256 amount,address to)',
+  'function close(uint256 id)',
+  'function pots(uint256) external view returns (address owner,address token,uint256 target,uint256 balance,uint64 created,bool closed)',
+  'function nextPotId() external view returns (uint256)',
+  'event PotCreated(uint256 indexed id,address indexed owner,address token,uint256 target)',
+  'event Deposited(uint256 indexed id,address indexed from,uint256 amount,uint256 newBalance)',
+  'event Withdrawn(uint256 indexed id,address indexed to,uint256 amount,uint256 newBalance)',
+  'event Closed(uint256 indexed id)',
+  'event AdapterSet(address indexed adapter)',
+]
+
+/* ------------------------- 2) Core helpers (generic) ---------------------- */
+type SignerOrProvider = ethers.Signer | ethers.providers.Provider
+
+const NATIVE = ethers.constants.AddressZero
+
+const assertDeployedCode = async (provider: ethers.providers.Provider, address: string) => {
+  const code = await provider.getCode(address)
+  if (!code || code === '0x') throw new Error(`No bytecode at ${address}. Wrong chain or not deployed.`)
+}
+
+export const getChainId = async (sp: SignerOrProvider) => {
+  if (ethers.Signer.isSigner(sp)) return sp.getChainId()
+  const net = await sp.getNetwork()
+  return net.chainId
+}
+
+// get addresses from your JSON loader (no hardcoded map anymore)
+export const getAddressesFor = async (sp: SignerOrProvider) => {
+  const chainIdBN = await getChainId(sp)
+  const chainId = Number(chainIdBN)
+  const d = getDeployment(chainId)
+  return {
+    UsernameRegistry: d.UsernameRegistry,
+    ProtectedEscrow: d.ProtectedEscrow,
+    GroupPool: d.GroupPool,
+    SavingsPot: d.SavingsPot,
   }
-  
-  interface GroupPaymentEvent {
-	type: 'GroupPaymentCreated' | 'GroupPaymentContributed' | 'GroupPaymentCompleted';
-	paymentId: string;
-	creator?: string;
-	recipient?: string;
-	amount: string;
-	numParticipants?: number;
-	remarks?: string;
-	event: ethers.Event;
+}
+
+const getContract = async <T extends ethers.Contract>(
+  sp: SignerOrProvider,
+  address: string,
+  abi: any
+): Promise<T> => {
+  const provider = ethers.Signer.isSigner(sp) ? sp.provider! : sp
+  await assertDeployedCode(provider, address)
+  return new ethers.Contract(address, abi, sp as any) as T
+}
+
+/* --------------------------- 3) Contract getters -------------------------- */
+export const getUsernameRegistry = async (sp: SignerOrProvider) => {
+  const { UsernameRegistry } = await getAddressesFor(sp)
+  return getContract(sp, UsernameRegistry, ABI_UsernameRegistry)
+}
+export const getProtectedEscrow = async (sp: SignerOrProvider) => {
+  const { ProtectedEscrow } = await getAddressesFor(sp)
+  return getContract(sp, ProtectedEscrow, ABI_ProtectedEscrow)
+}
+export const getGroupPool = async (sp: SignerOrProvider) => {
+  const { GroupPool } = await getAddressesFor(sp)
+  return getContract(sp, GroupPool, ABI_GroupPool)
+}
+export const getSavingsPot = async (sp: SignerOrProvider) => {
+  const { SavingsPot } = await getAddressesFor(sp)
+  return getContract(sp, SavingsPot, ABI_SavingsPot)
+}
+
+/* ------------------------------ 4) Registry -------------------------------- */
+export const registerUsername = async (signer: ethers.Signer, name: string) => {
+  const reg = await getUsernameRegistry(signer)
+  const tx = await reg.register(name)
+  return tx.wait()
+}
+export const resolveUsername = async (sp: SignerOrProvider, name: string) => {
+  const reg = await getUsernameRegistry(sp)
+  return reg.resolve(name)
+}
+
+/* ------------------------------ 5) Escrow ---------------------------------- */
+// rtype: 0 = Address, 1 = Username
+export const createTransferToAddress = async (
+  signer: ethers.Signer,
+  recipient: string,
+  amountETH: string,
+  opts?: { expiry?: number; note?: string; secret?: string; token?: string }
+) => {
+  const escrow = await getProtectedEscrow(signer)
+  const token = opts?.token ?? NATIVE
+  const expiry = opts?.expiry ?? 0
+  const note = opts?.note ?? ''
+  const hashlock = opts?.secret ? ethers.utils.keccak256(ethers.utils.toUtf8Bytes(opts.secret)) : ethers.constants.HashZero
+  const recipientBytes32 = ethers.utils.hexZeroPad(recipient, 32)
+
+  const value = ethers.utils.parseEther(amountETH)
+  const tx = await escrow.createTransfer(
+    token,
+    value,
+    0,
+    recipientBytes32 as any,
+    expiry,
+    hashlock,
+    note,
+    { value: token === NATIVE ? value : 0 }
+  )
+  return tx.wait()
+}
+
+export const createTransferToUsername = async (
+  signer: ethers.Signer,
+  username: string,
+  amountETH: string,
+  opts?: { expiry?: number; note?: string; secret?: string; token?: string }
+) => {
+  const escrow = await getProtectedEscrow(signer)
+  const token = opts?.token ?? NATIVE
+  const expiry = opts?.expiry ?? 0
+  const note = opts?.note ?? ''
+  const hashlock = opts?.secret ? ethers.utils.keccak256(ethers.utils.toUtf8Bytes(opts.secret)) : ethers.constants.HashZero
+  const recipientHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(username.toLowerCase()))
+
+  const value = ethers.utils.parseEther(amountETH)
+  const tx = await escrow.createTransfer(
+    token,
+    value,
+    1,
+    recipientHash as any,
+    expiry,
+    hashlock,
+    note,
+    { value: token === NATIVE ? value : 0 }
+  )
+  return tx.wait()
+}
+
+export const claimEscrow = async (signer: ethers.Signer, id: number) => {
+  const escrow = await getProtectedEscrow(signer)
+  const tx = await escrow.claim(id)
+  return tx.wait()
+}
+
+export const claimEscrowBySecret = async (signer: ethers.Signer, id: number, preimage: string, recipient?: string) => {
+  const escrow = await getProtectedEscrow(signer)
+  const tx = await escrow.claimBySecret(id, ethers.utils.toUtf8Bytes(preimage), recipient ?? ethers.constants.AddressZero)
+  return tx.wait()
+}
+
+export const refundEscrow = async (signer: ethers.Signer, id: number) => {
+  const escrow = await getProtectedEscrow(signer)
+  const tx = await escrow.refund(id)
+  return tx.wait()
+}
+
+export const getTransfer = async (sp: SignerOrProvider, id: number) => {
+  const escrow = await getProtectedEscrow(sp)
+  const t = await escrow.transfers(id)
+  return {
+    sender: t.sender as string,
+    token: t.token as string,
+    amount: ethers.utils.formatEther(t.amount),
+    expiry: Number(t.expiry),
+    recipientRaw: t.recipient as string, // bytes32
+    rtype: Number(t.rtype) as 0 | 1,
+    hashlock: t.hashlock as string,
+    claimed: Boolean(t.claimed),
   }
-  
-  interface SavingsPotEvent {
-	type: 'SavingsPotCreated' | 'PotContribution' | 'PotBroken';
-	potId: string;
-	owner?: string;
-	amount?: string;
-	name?: string;
-	targetAmount?: string;
-	remarks?: string;
-	event: ethers.Event;
+}
+
+export const getNextTransferId = async (sp: SignerOrProvider) => {
+  const escrow = await getProtectedEscrow(sp)
+  return (await escrow.nextId()).toNumber()
+}
+
+/* ------------------------------ 6) GroupPool ------------------------------- */
+export const createGroupPool = async (
+  signer: ethers.Signer,
+  params: { token?: string; recipient: string; targetETH: string; deadline?: number; metadata?: string }
+) => {
+  const gp = await getGroupPool(signer)
+  const token = params.token ?? NATIVE
+  const deadline = params.deadline ?? 0
+  const metadata = params.metadata ?? ''
+  const tx = await gp.createPool(token, params.recipient, ethers.utils.parseEther(params.targetETH), deadline, metadata)
+  return tx.wait()
+}
+
+export const contributeToPool = async (signer: ethers.Signer, id: number, amountETH: string) => {
+  const gp = await getGroupPool(signer)
+  const tx = await gp.contribute(id, 0, { value: ethers.utils.parseEther(amountETH) })
+  return tx.wait()
+}
+
+export const cancelPool = async (signer: ethers.Signer, id: number) => {
+  const gp = await getGroupPool(signer)
+  const tx = await gp.cancel(id)
+  return tx.wait()
+}
+
+export const refundPool = async (signer: ethers.Signer, id: number) => {
+  const gp = await getGroupPool(signer)
+  const tx = await gp.refund(id)
+  return tx.wait()
+}
+
+export const getPool = async (sp: SignerOrProvider, id: number) => {
+  const gp = await getGroupPool(sp)
+  const p = await gp.pools(id)
+  return {
+    creator: p.creator as string,
+    token: p.token as string,
+    recipient: p.recipient as string,
+    target: ethers.utils.formatEther(p.target),
+    total: ethers.utils.formatEther(p.total),
+    deadline: Number(p.deadline),
+    closed: Boolean(p.closed),
   }
-  
-  interface UserProfile {
-	username: string;
-	transferIds: string[];
-	groupPaymentIds: string[];
-	participatedGroupPayments: string[];
-	savingsPotIds: string[];
+}
+
+export const getPoolContribution = async (sp: SignerOrProvider, id: number, user: string) => {
+  const gp = await getGroupPool(sp)
+  const v = await gp.contributions(id, user)
+  return ethers.utils.formatEther(v)
+}
+
+export const getNextPoolId = async (sp: SignerOrProvider) => {
+  const gp = await getGroupPool(sp)
+  return (await gp.nextPoolId()).toNumber()
+}
+
+/* ------------------------------ 7) SavingsPot ------------------------------ */
+export const createPot = async (signer: ethers.Signer, token: string | null, targetETH: string) => {
+  const spc = await getSavingsPot(signer)
+  const tx = await spc.createPot(token ?? NATIVE, ethers.utils.parseEther(targetETH))
+  return tx.wait()
+}
+
+export const depositToPot = async (signer: ethers.Signer, id: number, amountETH: string) => {
+  const spc = await getSavingsPot(signer)
+  const tx = await spc.deposit(id, 0, { value: ethers.utils.parseEther(amountETH) })
+  return tx.wait()
+}
+
+export const withdrawFromPot = async (signer: ethers.Signer, id: number, amountETH: string, to?: string) => {
+  const spc = await getSavingsPot(signer)
+  const tx = await spc.withdraw(id, ethers.utils.parseEther(amountETH), to ?? ethers.constants.AddressZero)
+  return tx.wait()
+}
+
+export const closePot = async (signer: ethers.Signer, id: number) => {
+  const spc = await getSavingsPot(signer)
+  const tx = await spc.close(id)
+  return tx.wait()
+}
+
+export const getPot = async (sp: SignerOrProvider, id: number) => {
+  const spc = await getSavingsPot(sp)
+  const p = await spc.pots(id)
+  return {
+    owner: p.owner as string,
+    token: p.token as string,
+    target: ethers.utils.formatEther(p.target),
+    balance: ethers.utils.formatEther(p.balance),
+    created: Number(p.created),
+    closed: Boolean(p.closed),
   }
-  
-  interface RawContractTransfer {
-	sender: string;
-	recipient: string;
-	amount: ethers.BigNumber;
-	timestamp: ethers.BigNumber;
-	status: number;
-	remarks: string;
-  }
-  
-  export interface Transfer {
-	sender: string;
-	recipient: string;
-	amount: string;
-	timestamp: number;
-	status: number;
-	remarks: string;
-  }
-  
-  export interface GroupPayment {
-	id: string;
-	paymentId: string;
-	creator: string;
-	recipient: string;
-	totalAmount: string;
-	amountPerPerson: string;
-	numParticipants: number;
-	amountCollected: string;
-	timestamp: number;
-	status: number;
-	remarks: string;
-  }
-  
-  export interface SavingsPot {
-	id: string;
-	potId: string;
-	owner: string;
-	name: string;
-	targetAmount: string;
-	currentAmount: string;
-	timestamp: number;
-	status: number;
-	remarks: string;
-  }
-  
-  // Gets the appropriate contract address based on chainId
-const getContractAddress = async (signer: ethers.Signer) => {
-  const chainId = await signer.getChainId();
-  const address = CONTRACT_ADDRESSES[chainId as keyof typeof CONTRACT_ADDRESSES];
-  
-  if (!address) {
-    throw new Error(`No contract deployed on chain ${chainId}. Supported chains: ${Object.keys(CONTRACT_ADDRESSES).join(', ')}`);
-  }
-  
-  return address;
+}
+
+export const getNextPotId = async (sp: SignerOrProvider) => {
+  const spc = await getSavingsPot(sp)
+  return (await spc.nextPotId()).toNumber()
+}
+
+/* ------------------------------ 8) Listeners ------------------------------- */
+export const listenEscrowEvents = async (
+  sp: SignerOrProvider,
+  cb: (
+    ev:
+      | { type: 'TransferCreated'; id: number; sender: string; amount: string; rtype: number; note: string }
+      | { type: 'Claimed'; id: number; to: string }
+      | { type: 'Refunded'; id: number; to: string }
+  ) => void
+) => {
+  const escrow = await getProtectedEscrow(sp)
+  escrow.on('TransferCreated', (id, sender, _token, amount, rtype, _recipient, _expiry, _hash, note) => {
+    cb({ type: 'TransferCreated', id: id.toNumber(), sender, amount: ethers.utils.formatEther(amount), rtype: Number(rtype), note })
+  })
+  escrow.on('Claimed', (id, to) => cb({ type: 'Claimed', id: id.toNumber(), to }))
+  escrow.on('Refunded', (id, to) => cb({ type: 'Refunded', id: id.toNumber(), to }))
+  return () => escrow.removeAllListeners()
+}
+
+export const listenGroupPoolEvents = async (
+  sp: SignerOrProvider,
+  cb: (
+    ev:
+      | { type: 'PoolCreated'; id: number; creator: string; recipient: string; target: string }
+      | { type: 'Contributed'; id: number; from: string; amount: string; newTotal: string }
+      | { type: 'Distributed'; id: number; recipient: string; amount: string }
+      | { type: 'Cancelled'; id: number }
+      | { type: 'Refunded'; id: number; to: string; amount: string }
+  ) => void
+) => {
+  const gp = await getGroupPool(sp)
+  gp.on('PoolCreated', (id, creator, _token, recipient, target) =>
+    cb({ type: 'PoolCreated', id: id.toNumber(), creator, recipient, target: ethers.utils.formatEther(target) })
+  )
+  gp.on('Contributed', (id, from, amount, newTotal) =>
+    cb({
+      type: 'Contributed',
+      id: id.toNumber(),
+      from,
+      amount: ethers.utils.formatEther(amount),
+      newTotal: ethers.utils.formatEther(newTotal),
+    })
+  )
+  gp.on('Distributed', (id, recipient, amount) =>
+    cb({ type: 'Distributed', id: id.toNumber(), recipient, amount: ethers.utils.formatEther(amount) })
+  )
+  gp.on('Cancelled', (id) => cb({ type: 'Cancelled', id: id.toNumber() }))
+  gp.on('Refunded', (id, to, amount) => cb({ type: 'Refunded', id: id.toNumber(), to, amount: ethers.utils.formatEther(amount) }))
+  return () => gp.removeAllListeners()
+}
+
+export const listenSavingsEvents = async (
+  sp: SignerOrProvider,
+  cb: (
+    ev:
+      | { type: 'PotCreated'; id: number; owner: string; target: string }
+      | { type: 'Deposited'; id: number; from: string; amount: string; newBalance: string }
+      | { type: 'Withdrawn'; id: number; to: string; amount: string; newBalance: string }
+      | { type: 'Closed'; id: number }
+  ) => void
+) => {
+  const spc = await getSavingsPot(sp)
+  spc.on('PotCreated', (id, owner, _token, target) => cb({ type: 'PotCreated', id: id.toNumber(), owner, target: ethers.utils.formatEther(target) }))
+  spc.on('Deposited', (id, from, amount, newBalance) =>
+    cb({ type: 'Deposited', id: id.toNumber(), from, amount: ethers.utils.formatEther(amount), newBalance: ethers.utils.formatEther(newBalance) })
+  )
+  spc.on('Withdrawn', (id, to, amount, newBalance) =>
+    cb({ type: 'Withdrawn', id: id.toNumber(), to, amount: ethers.utils.formatEther(amount), newBalance: ethers.utils.formatEther(newBalance) })
+  )
+  spc.on('Closed', (id) => cb({ type: 'Closed', id: id.toNumber() }))
+  return () => spc.removeAllListeners()
+}
+
+/* ------------------------------ 9) Utils ---------------------------------- */
+export const parseEth = (v: string) => ethers.utils.parseEther(v)
+export const formatEth = (v: ethers.BigNumber) => ethers.utils.formatEther(v)
+
+// ---- Compatibility wrappers so existing components keep working ----
+
+// Transfers (old names expected by UI)
+export const sendToAddress = async (
+  signer: ethers.Signer,
+  recipient: string,
+  amountEth: string,
+  remarks: string
+) => {
+  return createTransferToAddress(signer, recipient, amountEth, { note: remarks });
 };
 
-// Contract instance getter with chain awareness and validation
-export const getContract = async (signer: ethers.Signer, expectedChainId?: number) => {
-  const signerChainId = await signer.getChainId();
-  
-  // Network mismatch guard
-  if (expectedChainId && expectedChainId !== signerChainId) {
-    throw new Error(`Network mismatch. Expected chain ${expectedChainId}, but wallet is on chain ${signerChainId}. Please switch networks.`);
+export const sendToUsername = async (
+  signer: ethers.Signer,
+  username: string,
+  amountEth: string,
+  remarks: string
+) => {
+  return createTransferToUsername(signer, username, amountEth, { note: remarks });
+};
+
+// Claim/refund (map to escrow functions)
+export const claimTransferById = async (signer: ethers.Signer, id: number) =>
+  claimEscrow(signer, id);
+
+export const claimTransferByAddress = async (signer: ethers.Signer, senderAddress: string) => {
+  // This is a simplified version - you might need to implement proper logic
+  // to find transfers by sender address
+  throw new Error('claimTransferByAddress not implemented - use claimTransferById instead');
+};
+
+export const claimTransferByUsername = async (signer: ethers.Signer, senderUsername: string) => {
+  // This is a simplified version - you might need to implement proper logic
+  // to find transfers by sender username
+  throw new Error('claimTransferByUsername not implemented - use claimTransferById instead');
+};
+
+export const refundTransfer = async (signer: ethers.Signer, id: number) =>
+  refundEscrow(signer, id);
+
+// Reads (names your UI might call)
+export const getTransferDetails = getTransfer;
+
+export const getPendingTransfers = async (signerOrProvider: SignerOrProvider, userAddress: string) => {
+  const allTransfers = await getUserTransfers(signerOrProvider, userAddress);
+  // Return only pending transfers (status = 0)
+  return allTransfers.filter(transfer => transfer.status === 0).map(transfer => transfer.id.toString());
+};
+
+// User management
+export const getUserByAddress = async (signerOrProvider: SignerOrProvider, address: string) => {
+  const registry = await getUsernameRegistry(signerOrProvider);
+  return await registry.primaryOf(address);
+};
+
+export const getUserByUsername = async (signerOrProvider: SignerOrProvider, username: string) => {
+  const registry = await getUsernameRegistry(signerOrProvider);
+  return await registry.resolve(username);
+};
+
+export const getUserProfile = async (signerOrProvider: SignerOrProvider, userAddress: string) => {
+  // This is a simplified version - you might need to implement proper logic
+  // to get user profile data
+  const username = await getUserByAddress(signerOrProvider, userAddress);
+  return {
+    username: username || '',
+    transferIds: [],
+    groupPaymentIds: [],
+    participatedGroupPayments: [],
+    savingsPotIds: []
+  };
+};
+
+const bytes32Eq = (a: string, b: string) =>
+  a.toLowerCase() === b.toLowerCase();
+
+export type UiTransferStatus = 'Pending' | 'Claimed' | 'Refunded' | 'Expired';
+
+export interface UiTransfer {
+  id: number;
+  direction: 'out' | 'in';
+  sender: string;
+  recipient: string;        // decoded (address or "(username)")
+  amountEth: string;
+  createdAt?: number;       // unix seconds
+  claimedAt?: number;
+  refundedAt?: number;
+  status: UiTransferStatus;
+  note?: string;
+}
+
+/**
+ * Returns outgoing transfers for `userAddress` with correct status
+ * by merging on-chain storage + TransferCreated/Claimed/Refunded events.
+ */
+export const getUserTransfers = async (
+  sp: SignerOrProvider,
+  userAddress: string,
+  fromBlock?: number,           // optional scan range tune
+  toBlock?: number
+): Promise<UiTransfer[]> => {
+  const escrow = await getProtectedEscrow(sp);
+  const provider = ethers.Signer.isSigner(sp) ? sp.provider! : sp;
+
+  // 1) Pull created events FROM this user (sender is indexed, so cheap).
+  const current = await provider.getBlockNumber();
+  const start = fromBlock ?? Math.max(0, current - 120_000); // ~safe default
+  const end   = toBlock ?? current;
+
+  const createdFilter = escrow.filters.TransferCreated(null, userAddress);
+  const createdLogs = await escrow.queryFilter(createdFilter, start, end);
+
+  // 2) Build map by id
+  const byId = new Map<number, UiTransfer>();
+  for (const log of createdLogs) {
+    const { id, sender, token, amount, rtype, recipient, expiry, hashlock, note } = (log.args as any);
+    const intId = id.toNumber();
+    byId.set(intId, {
+      id: intId,
+      direction: 'out',
+      sender,
+      recipient: decodeRecipient(Number(rtype), recipient),
+      amountEth: ethers.utils.formatEther(amount),
+      createdAt: (await log.getBlock()).timestamp,
+      status: 'Pending', // provisional, we'll refine below
+      note,
+    });
   }
-  
-  const address = await getContractAddress(signer);
-  
-  // Verify contract exists at address
-  const provider = signer.provider;
-  if (provider) {
-    const code = await provider.getCode(address);
-    if (code === '0x') {
-      throw new Error(`No contract bytecode found at ${address} on chain ${signerChainId}. Contract may not be deployed on this network.`);
+
+  if (byId.size === 0) return [];
+
+  // 3) For each id, read storage + look for Claim/Refund events
+  const ids = [...byId.keys()];
+
+  // Query Claim/Refund logs for these ids (id is indexed)
+  const claimedLogs = await escrow.queryFilter(escrow.filters.Claimed(null), start, end);
+  const refundedLogs = await escrow.queryFilter(escrow.filters.Refunded(null), start, end);
+
+  const claimedById = new Map<number, number>();  // id -> ts
+  for (const lg of claimedLogs) {
+    const id = (lg.args as any).id.toNumber();
+    if (!byId.has(id)) continue;
+    const ts = (await lg.getBlock()).timestamp;
+    claimedById.set(id, ts);
+  }
+
+  const refundedById = new Map<number, number>(); // id -> ts
+  for (const lg of refundedLogs) {
+    const id = (lg.args as any).id.toNumber();
+    if (!byId.has(id)) continue;
+    const ts = (await lg.getBlock()).timestamp;
+    refundedById.set(id, ts);
+  }
+
+  // Finalize each item with on-chain `claimed` flag + expiry
+  const results: UiTransfer[] = [];
+  for (const id of ids) {
+    const row = byId.get(id)!;
+    const t = await escrow.transfers(id);
+    const claimed = Boolean(t.claimed);
+    const expiry = Number(t.expiry);
+
+    if (claimed) {
+      row.status = 'Claimed';
+      row.claimedAt = claimedById.get(id);
+    } else if (refundedById.has(id)) {
+      row.status = 'Refunded';
+      row.refundedAt = refundedById.get(id);
+    } else if (expiry !== 0 && expiry < Math.floor(Date.now() / 1000)) {
+      row.status = 'Expired';
+    } else {
+      row.status = 'Pending';
     }
-  }
-  
-  console.log(`✅ Contract found at ${address} on chain ${signerChainId}`);
-  return new ethers.Contract(address, CONTRACT_ABI, signer);
-};
-  
-  // Basic Contract Interaction Functions
-  export const getPaymentAmount = async (signer: ethers.Signer, paymentId: string) => {
-	try {
-	  const contract = await getContract(signer);
-	  const payment = await contract.getGroupPaymentDetails(paymentId);
-	  return ethers.utils.formatEther(payment.amountPerPerson);
-	} catch (error) {
-	  console.error('Error fetching payment amount:', error);
-	  throw error;
-	}
-  };
-  
-  // User Registration and Management
-  export const registerUsername = async (signer: ethers.Signer, username: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.registerUsername(username);
-	await tx.wait();
-  };
-  
-  export const getUserByUsername = async (signer: ethers.Signer, username: string) => {
-	const contract = await getContract(signer);
-	return await contract.getUserByUsername(username);
-  };
-  
-  export const getUserByAddress = async (signer: ethers.Signer, address: string) => {
-	const contract = await getContract(signer);
-	return await contract.getUserByAddress(address);
-  };
-  
-  export const getUserProfile = async (signer: ethers.Signer, userAddress: string): Promise<UserProfile> => {
-	const contract = await getContract(signer);
-	return await contract.getUserProfile(userAddress);
-  };
-  
-  // Transfer Functions
-  export const sendToAddress = async (signer: ethers.Signer, recipient: string, amount: string, remarks: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.sendToAddress(recipient, remarks, { value: ethers.utils.parseEther(amount) });
-	await tx.wait();
-  };
-  
-  export const sendToUsername = async (signer: ethers.Signer, username: string, amount: string, remarks: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.sendToUsername(username, remarks, { value: ethers.utils.parseEther(amount) });
-	await tx.wait();
-  };
-  
-  export const claimTransferByAddress = async (signer: ethers.Signer, senderAddress: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.claimTransferByAddress(senderAddress);
-	await tx.wait();
-  };
-  
-  export const claimTransferByUsername = async (signer: ethers.Signer, senderUsername: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.claimTransferByUsername(senderUsername);
-	await tx.wait();
-  };
-  
-  export const claimTransferById = async (signer: ethers.Signer, transferId: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.claimTransferById(transferId);
-	await tx.wait();
-  };
-  
-  export const refundTransfer = async (signer: ethers.Signer, transferId: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.refundTransfer(transferId);
-	await tx.wait();
-  };
-  
-  // Group Payment Functions
-  export const createGroupPayment = async (
-	signer: ethers.Signer,
-	recipient: string,
-	numParticipants: number,
-	amount: string,
-	remarks: string
-  ) => {
-	const contract = await getContract(signer);
-	const tx = await contract.createGroupPayment(
-	  recipient,
-	  numParticipants,
-	  remarks,
-	  { value: ethers.utils.parseEther(amount) }
-	);
-	await tx.wait();
-  };
-  
-  export const contributeToGroupPayment = async (
-	signer: ethers.Signer,
-	paymentId: string,
-	amount: string
-  ) => {
-	const contract = await getContract(signer);
-	const tx = await contract.contributeToGroupPayment(paymentId, {
-	  value: ethers.utils.parseEther(amount)
-	});
-	await tx.wait();
-  };
-  
-  export const getGroupPaymentDetails = async (signer: ethers.Signer, paymentId: string) => {
-	const contract = await getContract(signer);
-	const details = await contract.getGroupPaymentDetails(paymentId);
-	return {
-	  id: paymentId,
-	  paymentId,
-	  creator: details.creator,
-	  recipient: details.recipient,
-	  totalAmount: ethers.utils.formatEther(details.totalAmount),
-	  amountPerPerson: ethers.utils.formatEther(details.amountPerPerson),
-	  numParticipants: details.numParticipants.toNumber(),
-	  amountCollected: ethers.utils.formatEther(details.amountCollected),
-	  timestamp: details.timestamp.toNumber(),
-	  status: details.status,
-	  remarks: details.remarks
-	};
-  };
-  
-  export const hasContributedToGroupPayment = async (
-	signer: ethers.Signer,
-	paymentId: string,
-	userAddress: string
-  ) => {
-	const contract = await getContract(signer);
-	return await contract.hasContributedToGroupPayment(paymentId, userAddress);
-  };
-  
-  export const getGroupPaymentContribution = async (
-	signer: ethers.Signer,
-	paymentId: string,
-	userAddress: string
-  ) => {
-	const contract = await getContract(signer);
-	const contribution = await contract.getGroupPaymentContribution(paymentId, userAddress);
-	return ethers.utils.formatEther(contribution);
-  };
-  
-  // Savings Pot Functions
-  export const createSavingsPot = async (
-	signer: ethers.Signer,
-	name: string,
-	targetAmount: string,
-	remarks: string
-  ) => {
-	const contract = await getContract(signer);
-	const tx = await contract.createSavingsPot(
-	  name,
-	  ethers.utils.parseEther(targetAmount),
-	  remarks
-	);
-	await tx.wait();
-  };
-  
-  export const contributeToSavingsPot = async (
-	signer: ethers.Signer,
-	potId: string,
-	amount: string
-  ) => {
-	const contract = await getContract(signer);
-	const tx = await contract.contributeToSavingsPot(potId, {
-	  value: ethers.utils.parseEther(amount)
-	});
-	await tx.wait();
-  };
-  
-  export const breakPot = async (signer: ethers.Signer, potId: string) => {
-	const contract = await getContract(signer);
-	const tx = await contract.breakPot(potId);
-	await tx.wait();
-  };
-  
-  export const getSavingsPotDetails = async (signer: ethers.Signer, potId: string) => {
-	const contract = await getContract(signer);
-	const details = await contract.getSavingsPotDetails(potId);
-	return {
-	  id: potId,
-	  potId,
-	  owner: details.owner,
-	  name: details.name,
-	  targetAmount: ethers.utils.formatEther(details.targetAmount),
-	  currentAmount: ethers.utils.formatEther(details.currentAmount),
-	  timestamp: details.timestamp.toNumber(),
-	  status: details.status,
-	  remarks: details.remarks
-	};
-  };
-  
-  // Transaction History Functions
-  export const getUserTransfers = async (
-	signer: ethers.Signer,
-	userAddress: string
-  ): Promise<Transfer[]> => {
-	const contract = await getContract(signer);
-	const transfers: RawContractTransfer[] = await contract.getUserTransfers(userAddress);
-  
-	return transfers.map((transfer: RawContractTransfer) => ({
-	  sender: transfer.sender,
-	  recipient: transfer.recipient,
-	  amount: ethers.utils.formatEther(transfer.amount),
-	  timestamp: transfer.timestamp.toNumber(),
-	  status: transfer.status,
-	  remarks: transfer.remarks,
-	}));
-  };
-  
-  export const getTransferDetails = async (signer: ethers.Signer, transferId: string) => {
-	const contract = await getContract(signer);
-	const transfer = await contract.getTransferDetails(transferId);
-	return {
-	  sender: transfer.sender,
-	  recipient: transfer.recipient,
-	  amount: ethers.utils.formatEther(transfer.amount),
-	  timestamp: transfer.timestamp.toNumber(),
-	  status: transfer.status,
-	  remarks: transfer.remarks
-	};
-  };
-  
-  export const getPendingTransfers = async (signer: ethers.Signer, userAddress: string) => {
-	const contract = await getContract(signer);
-	return await contract.getPendingTransfers(userAddress);
-  };
-  
-  // Event Listeners
-  export const listenForAllEvents = async (
-	signer: ethers.Signer,
-	callback: (event: TransferEvent | GroupPaymentEvent | SavingsPotEvent) => void
-  ) => {
-	const contract = await getContract(signer);
-  
-	// Transfer Events
-	contract.on('TransferInitiated', 
-	  (transferId, sender, recipient, amount, remarks, event) => {
-		callback({
-		  type: 'TransferInitiated',
-		  transferId,
-		  sender,
-		  recipient,
-		  amount: ethers.utils.formatEther(amount),
-		  remarks,
-		  event
-		});
-	  }
-	);
-  
-	contract.on('TransferClaimed',
-	  (transferId, recipient, amount, event) => {
-		callback({
-		  type: 'TransferClaimed',
-		  transferId,
-		  recipient,
-		  amount: ethers.utils.formatEther(amount),
-		  event
-		});
-	  }
-	);
-  
-	contract.on('TransferRefunded',
-	  (transferId, sender, amount, event) => {
-		callback({
-		  type: 'TransferRefunded',
-		  transferId,
-		  sender,
-		  amount: ethers.utils.formatEther(amount),
-		  event
-		});
-	  }
-	);
-  
-	// Group Payment Events
-	contract.on('GroupPaymentCreated', 
-	  (paymentId, creator, recipient, totalAmount, numParticipants, remarks, event) => {
-		callback({
-		  type: 'GroupPaymentCreated',
-		  paymentId,
-		  creator,
-		  recipient,
-		  amount: ethers.utils.formatEther(totalAmount),
-		  numParticipants,
-		  remarks,
-		  event
-		});
-	  }
-	);
-  
-	contract.on('GroupPaymentContributed',
-	  (paymentId, contributor, amount, event) => {
-		callback({
-		  type: 'GroupPaymentContributed',
-		  paymentId,
-		  creator: contributor,
-		  amount: ethers.utils.formatEther(amount),
-		  event
-		});
-	  }
-	);
-  
-	contract.on('GroupPaymentCompleted',
-	  (paymentId, recipient, amount, event) => {
-		callback({
-		  type: 'GroupPaymentCompleted',
-		  paymentId,
-		  recipient,
-		  amount: ethers.utils.formatEther(amount),
-		  event
-		});
-	  }
-	);
-  
-	// Savings Pot Events
-	contract.on('SavingsPotCreated', 
-	  (potId, owner, name, targetAmount, remarks, event) => {
-		callback({
-		  type: 'SavingsPotCreated',
-		  potId,
-		  owner,
-		  name,
-		  targetAmount: ethers.utils.formatEther(targetAmount),
-		  remarks,
-		  event
-		});
-	  }
-	);
-  
-	contract.on('PotContribution',
-	  (potId, contributor, amount, event) => {
-		callback({
-		  type: 'PotContribution',
-		  potId,
-		  owner: contributor,
-		  amount: ethers.utils.formatEther(amount),
-		  event
-		});
-	  }
-	);
-  
-	contract.on('PotBroken',
-	  (potId, owner, amount, event) => {
-		callback({
-		  type: 'PotBroken',
-		  potId,
-		  owner,
-		  amount: ethers.utils.formatEther(amount),
-		  event
-		});
-	  }
-	);
-  
-	return () => {
-	  contract.removeAllListeners();
-	};
-  };
-  
-  // Helper Functions
-  export const formatAmount = (amount: ethers.BigNumber): string => {
-	return ethers.utils.formatEther(amount);
-  };
-  
-  export const parseAmount = (amount: string): ethers.BigNumber => {
-	return ethers.utils.parseEther(amount);
-  };
-  
-  export const formatTimestamp = (timestamp: ethers.BigNumber): Date => {
-	return new Date(timestamp.toNumber() * 1000);
-  };
-  
-  // Chain specific helpers
-  export const getCurrentChainId = async (signer: ethers.Signer): Promise<number> => {
-	return await signer.getChainId();
-  };
-  
-  export const getChainNativeCurrency = (chainId: number) => {
-	switch (chainId) {
-	  case 12227332:
-		return {
-		  name: 'GAS',
-		  symbol: 'GAS',
-		  decimals: 18
-		};
-	  case 656476:
-		return {
-		  name: 'EDU',
-		  symbol: 'EDU',
-		  decimals: 18
-		};
-	  default:
-		return {
-		  name: 'GAS',
-		  symbol: 'GAS',
-		  decimals: 18
-		};
-	}
-  };
-  
-  export const getExplorerUrl = (chainId: number) => {
-	switch (chainId) {
-	  case 12227332:
-		return 'https://xt4scan.ngd.network/';
-	  case 656476:
-		return 'https://opencampus-codex.blockscout.com/';
-	  default:
-		return 'https://xt4scan.ngd.network/';
-	}
-  };
-  
-  export const isContractDeployed = async (signer: ethers.Signer): Promise<boolean> => {
-	try {
-	  const address = await getContractAddress(signer);
-	  const provider = signer.provider;
-	  if (!provider) return false;
-	  
-	  const code = await provider.getCode(address);
-	  return code !== '0x';
-	} catch (error) {
-	  console.error('Error checking contract deployment:', error);
-	  return false;
-	}
-  };
-  
-  // Error handling helper
-  export class ContractError extends Error {
-	constructor(
-	  message: string,
-	  public readonly code?: string,
-	  public readonly chainId?: number
-	) {
-	  super(message);
-	  this.name = 'ContractError';
-	}
-  }
-  
-  export const handleContractError = (error: unknown, chainId?: number): string => {
-  if (error instanceof ContractError) {
-    return `Chain ${chainId}: ${error.message}`;
+    results.push(row);
   }
 
+  // newest first
+  results.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+  return results;
+};
+
+// Group payments (map to pool functions)
+export const createGroupPayment = async (
+  signer: ethers.Signer,
+  recipient: string,
+  numParticipants: number,
+  amount: string,
+  remarks: string
+) => {
+  const amountBN = parseEth(amount);
+  const targetAmount = amountBN.mul(numParticipants);
+  return createGroupPool(signer, {
+    token: null, // ETH
+    recipient,
+    targetETH: targetAmount.toString(),
+    deadline: Math.floor(Date.now() / 1000) + 86400, // 24 hours
+    metadata: remarks
+  });
+};
+
+export const contributeToGroupPayment = async (
+  signer: ethers.Signer,
+  paymentId: string,
+  amount: string
+) => {
+  return contributeToPool(signer, parseInt(paymentId), amount);
+};
+
+export const getGroupPaymentDetails = async (signerOrProvider: SignerOrProvider, paymentId: string) => {
+  const pool = await getPool(signerOrProvider, parseInt(paymentId));
+  return {
+    id: paymentId,
+    paymentId,
+    creator: pool.creator,
+    recipient: pool.recipient,
+    totalAmount: formatEth(parseEth(pool.target)),
+    amountPerPerson: formatEth(parseEth(pool.target)), // Simplified
+    numParticipants: 1, // Simplified
+    amountCollected: formatEth(parseEth(pool.total)),
+    timestamp: 0, // Simplified
+    status: pool.closed ? 2 : 1, // Simplified
+    remarks: '' // Simplified
+  };
+};
+
+export const hasContributedToGroupPayment = async (
+  signerOrProvider: SignerOrProvider,
+  paymentId: string,
+  userAddress: string
+) => {
+  const contribution = await getPoolContribution(signerOrProvider, parseInt(paymentId), userAddress);
+  return contribution !== '0.0' && contribution !== '0';
+};
+
+export const getGroupPaymentContribution = async (
+  signerOrProvider: SignerOrProvider,
+  paymentId: string,
+  userAddress: string
+) => {
+  const contribution = await getPoolContribution(signerOrProvider, parseInt(paymentId), userAddress);
+  return contribution; // Already formatted as string
+};
+
+// Savings pots (map to pot functions)
+export const createSavingsPot = async (
+  signer: ethers.Signer,
+  name: string,
+  targetAmount: string,
+  remarks: string
+) => {
+  return createPot(signer, null, targetAmount);
+};
+
+export const contributeToSavingsPot = async (
+  signer: ethers.Signer,
+  potId: string,
+  amount: string
+) => {
+  return depositToPot(signer, parseInt(potId), amount);
+};
+
+export const breakPot = async (signer: ethers.Signer, potId: string) => {
+  return closePot(signer, parseInt(potId));
+};
+
+export const getSavingsPotDetails = async (signerOrProvider: SignerOrProvider, potId: string) => {
+  const pot = await getPot(signerOrProvider, parseInt(potId));
+  return {
+    id: potId,
+    potId,
+    owner: pot.owner,
+    name: `Pot ${potId}`, // Simplified name
+    targetAmount: formatEth(parseEth(pot.target)),
+    currentAmount: formatEth(parseEth(pot.balance)),
+    timestamp: 0, // Simplified
+    status: pot.closed ? 2 : 1, // Simplified
+    remarks: '' // Simplified
+  };
+};
+
+// Error handling
+export const handleContractError = (error: unknown, chainId?: number): string => {
   if (error instanceof Error) {
-    // Check for contract/ABI mismatch
-    if (error.message.includes('data=0x') || (error as any)?.error?.data === "0x" || (error as any)?.data === "0x") {
-      return `Contract/ABI mismatch: Function not found at contract address. Check if contract is deployed correctly on chain ${chainId}.`;
-    }
-    
     if (error.message.includes('user rejected')) {
       return 'Transaction was rejected by user';
     }
     if (error.message.includes('insufficient funds')) {
-      return `Insufficient ${getChainNativeCurrency(chainId || 12227332).symbol} for transaction`;
+      return 'Insufficient funds for transaction';
     }
     if (error.message.includes('CALL_EXCEPTION')) {
-      return `Contract call failed: ${error.message}. This usually means wrong contract address or ABI mismatch.`;
+      return `Contract call failed: ${error.message}`;
     }
     return error.message;
   }
-
   return 'An unexpected error occurred';
 };
