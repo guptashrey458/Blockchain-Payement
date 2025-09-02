@@ -590,11 +590,11 @@ export const createGroupPayment = async (
   remarks: string
 ) => {
   const amountBN = parseEth(amount);
-  const targetAmount = amountBN.mul(numParticipants);
+  const targetAmount = amountBN.mul(ethers.BigNumber.from(numParticipants));
   return createGroupPool(signer, {
     token: null, // ETH
     recipient,
-    targetETH: targetAmount.toString(),
+    targetETH: formatEth(targetAmount),
     deadline: Math.floor(Date.now() / 1000) + 86400, // 24 hours
     metadata: remarks
   });
@@ -615,10 +615,10 @@ export const getGroupPaymentDetails = async (signerOrProvider: SignerOrProvider,
     paymentId,
     creator: pool.creator,
     recipient: pool.recipient,
-    totalAmount: formatEth(parseEth(pool.target)),
-    amountPerPerson: formatEth(parseEth(pool.target)), // Simplified
+    totalAmount: pool.target,
+    amountPerPerson: pool.target, // Simplified
     numParticipants: 1, // Simplified
-    amountCollected: formatEth(parseEth(pool.total)),
+    amountCollected: pool.total,
     timestamp: 0, // Simplified
     status: pool.closed ? 2 : 1, // Simplified
     remarks: '' // Simplified
@@ -672,8 +672,8 @@ export const getSavingsPotDetails = async (signerOrProvider: SignerOrProvider, p
     potId,
     owner: pot.owner,
     name: `Pot ${potId}`, // Simplified name
-    targetAmount: formatEth(parseEth(pot.target)),
-    currentAmount: formatEth(parseEth(pot.balance)),
+    targetAmount: pot.target,
+    currentAmount: pot.balance,
     timestamp: 0, // Simplified
     status: pot.closed ? 2 : 1, // Simplified
     remarks: '' // Simplified
