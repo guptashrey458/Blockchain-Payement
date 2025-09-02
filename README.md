@@ -1,239 +1,298 @@
 # ProtectedPay
 
 <div align="center">
-  <img src="https://github.com/user-attachments/assets/eb3dbd55-6522-4d3b-b6f9-6ec63157e565" alt="ProtectedPay Logo" width="650px">
+  <h1>🛡️ ProtectedPay</h1>
+  <h3>Smart. Secure. Multi-Chain Crypto Transfers</h3>
   
-  <h3>Smart. Secure Crypto Transfers</h3>
+  <p>A revolutionary DeFi platform for secure transfers, group payments, and smart savings across multiple EVM-compatible blockchains.</p>
   
-  <p>A revolutionary DeFi platform for secure transfers, group payments, and smart savings across multiple blockchains.</p>
+  <img src="https://img.shields.io/badge/Next.js-14.2.13-black" alt="Next.js">
+  <img src="https://img.shields.io/badge/TypeScript-5.0-blue" alt="TypeScript">
+  <img src="https://img.shields.io/badge/Ethers.js-5.8.0-orange" alt="Ethers.js">
+  <img src="https://img.shields.io/badge/Wagmi-2.0-green" alt="Wagmi">
+  <img src="https://img.shields.io/badge/RainbowKit-1.0-purple" alt="RainbowKit">
 </div>
 
-## 📋 Contents
+## 🚀 Overview
 
-- [Features](#-features)
-- [Supported Blockchains](#-supported-blockchains)
-- [How It Works](#-how-it-works)
+ProtectedPay is a comprehensive DeFi application that enables secure cryptocurrency transfers, collaborative group payments, and goal-based savings across multiple blockchain networks. Built with modern web technologies, it provides a seamless user experience while maintaining the highest security standards.
 
-- [Security](#-security)
-- [Deployed Contracts](#-deployed-contracts)
-- [Demo](#-demo)
-- [Support](#-support)
+## ✨ Key Features
 
-## ✨ Features
-
-### 🛡️ Protected Cross-Chain Transfers
-
-<img align="right" src="https://github.com/user-attachments/assets/bdb20bd8-fa93-488a-b720-46615b9918de" width="350px">
-
-- **Escrow-Like Protection**: Funds remain secure until claimed by recipient
-- **Multi-Chain Support**: Send assets seamlessly across different blockchains
-- **Easy Identification**: Transfer using usernames instead of complex addresses
-- **Customizable Remarks**: Add notes to help identify your transfers
-- **Refund Safety Net**: Easily recover unclaimed funds
-- **QR Integration**: Scan to pay functionality for quick transfers
-- **Transaction Privacy**: Keep your transfer details confidential
-
-<br clear="right"/>
+### 🛡️ Protected Transfers
+- **Escrow-based Security**: Funds are held securely until claimed by recipients
+- **Username System**: Send to memorable usernames instead of complex addresses
+- **Multi-Chain Support**: Transfer across 10+ supported blockchain networks
+- **QR Code Integration**: Scan and generate QR codes for quick payments
+- **Refund Protection**: Recover unclaimed funds automatically
+- **Transaction History**: Complete audit trail of all transfers
 
 ### 👥 Group Payments
-
-<img align="right" src="https://github.com/user-attachments/assets/56141ff7-ad4b-4a1e-bfac-5abdd92b22a9" width="350px">
-
-- **Split Expenses Easily**: Divide costs among friends or colleagues
-- **Cross-Chain Contributors**: Accept payments from any supported blockchain
+- **Collaborative Funding**: Split expenses among multiple participants
+- **Cross-Chain Contributions**: Accept payments from different networks
 - **Automatic Distribution**: Funds released when target amount is reached
-- **Real-Time Tracking**: Monitor contributions as they happen
-- **Transparent History**: View all group payment activity
-- **Flexible Participation**: Join existing payment groups with minimal setup
+- **Real-Time Tracking**: Monitor contributions and progress
+- **Flexible Deadlines**: Set custom time limits for group payments
+- **Event-Driven Architecture**: Efficient blockchain event monitoring
 
-<br clear="right"/>
-
-### 💰 Savings Pots
-
-<img align="right" src="https://github.com/user-attachments/assets/4c88cdb7-d21c-4d1e-863f-53d063830e19" width="350px">
-
+### 💰 Smart Savings Pots
 - **Goal-Based Savings**: Set targets and track progress visually
-- **Chain-Specific Pots**: Create dedicated savings on each blockchain
-- **Flexible Contributions**: Add funds on your own schedule
-- **Emergency Access**: Withdraw when needed without penalties
-- **Purpose Tracking**: Organize savings by specific goals or needs
-- **Yield Earning**: Option to earn yield on your savings, increasing chain TVL
-- **Progress Visualization**: Watch your savings grow in real-time
+- **Multi-Chain Support**: Create savings pots on different networks
+- **Flexible Contributions**: Add funds at your own pace
+- **Emergency Withdrawals**: Access funds when needed
+- **Progress Visualization**: Real-time savings growth tracking
 
-<br clear="right"/>
+### 🔗 Cross-Chain Experience
+- **Universal Username**: Single identity across all supported chains
+- **Unified Dashboard**: View all activities in one interface
+- **Real-Time Balances**: Track assets across all networks
+- **Seamless Network Switching**: Change networks without losing context
 
-### 🔄 Cross-Chain User Experience
+## 🏗️ Technical Architecture
 
-<img align="right" src="https://github.com/user-attachments/assets/35cbdaad-5e05-4dc6-9a13-18b2f0b4a919" width="350px">
+### Frontend Stack
+- **Next.js 14.2.13**: React framework with App Router
+- **TypeScript**: Type-safe development
+- **Tailwind CSS**: Utility-first styling
+- **Framer Motion**: Smooth animations and transitions
+- **Heroicons**: Beautiful SVG icons
 
-- **Universal Username**: One identity across all supported chains
-- **Unified Dashboard**: View all activities in a single interface
-- **Real-Time Balances**: Track your assets across all networks
-- **Chain-Aware Design**: UI adapts to the selected blockchain
-- **Seamless Switching**: Change networks without changing interfaces
-- **Comprehensive History**: View transactions across all chains
+### Blockchain Integration
+- **Wagmi v2**: React hooks for Ethereum
+- **RainbowKit**: Wallet connection UI
+- **Ethers.js v5**: Ethereum library for smart contract interaction
+- **Multi-Chain Support**: 10+ EVM-compatible networks
 
-<br clear="right"/>
+### Smart Contracts
+- **UsernameRegistry**: Manages username-to-address mappings
+- **ProtectedEscrow**: Handles secure transfers with escrow functionality
+- **GroupPool**: Manages collaborative group payments
+- **SavingsPot**: Implements goal-based savings functionality
 
-### 📱 QR Code System
+## 🔗 Supported Networks
 
-<img align="right" src="https://github.com/user-attachments/assets/bc4e425b-d6f7-49b8-a4fe-8831ba9e5548" width="200px">
+| Network | Type | Chain ID | Status |
+|---------|------|----------|--------|
+| Ethereum Sepolia | Testnet | 11155111 | ✅ Active |
+| Electroneum Mainnet | Mainnet | 52014 | ✅ Active |
+| Electroneum Testnet | Testnet | 5201420 | ✅ Active |
+| EDU Chain Mainnet | Mainnet | 41923 | ✅ Active |
+| EDU Chain Testnet | Testnet | 656476 | ✅ Active |
+| NeoX Testnet | Testnet | 12227332 | ✅ Active |
+| KAIA Testnet | Testnet | 1001 | ✅ Active |
+| Ancient8 Testnet | Testnet | 28122024 | ✅ Active |
+| Mantle Sepolia | Testnet | 5003 | ✅ Active |
+| Linea Sepolia | Testnet | 59141 | ✅ Active |
+| Creator Chain Testnet | Testnet | 66665 | ✅ Active |
 
-- **Profile QR Codes**: Generate codes containing payment details
-- **In-App Scanner**: Scan QR codes via camera or image uploads
-- **Quick Transfers**: Auto-fill payment information from scanned codes
-- **Secure Verification**: Validate codes before processing payments
-- **Share Anywhere**: Easy to share via messenger or print
-- **Instant Recognition**: Fast processing of payment information
+## 🚀 Getting Started
 
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/f645759e-47bf-4fb1-9e87-b46f7c0bc6a7" width="400px">
-</div>
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- MetaMask or compatible wallet
+- Testnet tokens for testing
 
-<br clear="right"/>
+### Installation
 
-## 🔗 Supported Blockchains
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/guptashrey458/Blockchain-Payement.git
+   cd Blockchain-Payement
+   ```
 
-ProtectedPay operates seamlessly across multiple blockchains, delivering consistent functionality regardless of your preferred network.
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-<div align="center">
-  <table>
-    <tr>
-      <td align="center"><img src="/public/chains/electroneum.png" width="50px"><br><b>Electroneum</b></td>
-      <td align="center"><img src="/public/chains/educhain.png" width="50px"><br><b>EduChain</b></td>
-      <td align="center"><img src="/public/chains/neox.png" width="50px"><br><b>NeoX</b></td>
-      <td align="center"><img src="/public/chains/kaia.png" width="50px"><br><b>KAIA</b></td>
-      <td align="center"><img src="/public/chains/telos.png" width="50px"><br><b>Telos</b></td>
-    </tr>
-    <tr>
-      <td align="center"><img src="/public/chains/ancient8.png" width="50px"><br><b>Ancient8</b></td>
-      <td align="center"><img src="/public/chains/mantle.png" width="50px"><br><b>Mantle</b></td>
-      <td align="center"><img src="/public/chains/linea.png" width="50px"><br><b>Linea</b></td>
-      <td align="center"><img src="/public/chains/creator.png" width="50px"><br><b>Creator</b></td>
-      <td align="center"><img src="/public/chains/crossfi.png" width="50px"><br><b>CrossFi</b></td>
-    </tr>
-  </table>
-</div>
+3. **Set up environment variables**
+   ```bash
+   cp .env.example .env.local
+   ```
+   
+   Configure your environment variables:
+   ```env
+   NEXT_PUBLIC_WC_PROJECT_ID=your_walletconnect_project_id
+   NEXT_PUBLIC_SEPOLIA_RPC=your_sepolia_rpc_url
+   NEXT_PUBLIC_LINEA_SEPOLIA_RPC_URL=your_linea_rpc_url
+   ```
 
-## 🚀 How It Works
+4. **Start the development server**
+   ```bash
+   npm run dev
+   ```
 
-### Protected Transfers in 3 Simple Steps
+5. **Open your browser**
+   Navigate to `http://localhost:3000`
 
-1. **Connect & Select**: Choose your blockchain network and connect your wallet
-2. **Enter Details**: Specify recipient (username, address, or QR scan) and amount
-3. **Confirm & Send**: The recipient securely claims funds when ready
+### Smart Contract Deployment
 
-### Group Payments Made Easy
+The application includes Foundry-based smart contracts for deployment:
 
-1. **Create Pool**: Set up a payment group with target amount and participants
-2. **Share & Collect**: Participants contribute from any supported chain
-3. **Auto-Distribution**: Funds are automatically sent to the recipient when the target is reached
+```bash
+# Install Foundry
+curl -L https://foundry.paradigm.xyz | bash
+foundryup
 
-### Smart Savings Pots
+# Deploy contracts
+cd contracts
+forge build
+forge script script/Deploy.s.sol --rpc-url $SEPOLIA_RPC --broadcast --verify
+```
 
-1. **Set Goals**: Choose a blockchain and set your savings target
-2. **Contribute**: Add funds at your own pace with real-time progress tracking
-3. **Yield Option**: Opt to earn yield on your savings, helping grow both your funds and the chain's TVL
-4. **Flexible Access**: Withdraw partially or completely whenever needed
+## 📱 Usage Guide
 
+### 1. Connect Your Wallet
+- Click "Connect Wallet" in the top navigation
+- Select your preferred wallet (MetaMask, WalletConnect, etc.)
+- Choose your desired blockchain network
 
+### 2. Register a Username
+- Navigate to Profile section
+- Enter your desired username
+- Confirm the transaction to register
 
-## 🔒 Security
+### 3. Send Protected Transfers
+- Go to Transfer section
+- Enter recipient (username, address, or scan QR)
+- Specify amount and add optional remarks
+- Confirm the transaction
 
-ProtectedPay prioritizes security at every level:
+### 4. Create Group Payments
+- Navigate to Group Payments
+- Click "Create New Group Payment"
+- Set target amount, deadline, and participant count
+- Share the payment link with contributors
 
-- **Smart Contract Safety**: Chain-specific contracts with rigorous security measures
-- **Non-Custodial Architecture**: Users always maintain control of their funds
-- **Protected Transfers**: Built-in escrow functionality keeps funds secure
-- **QR Verification**: Thorough validation of all scanned payment codes
-- **Cross-Chain Safeguards**: Secure bridging between different blockchains
-- **Transparent Transactions**: Clear visibility of all operation stages
+### 5. Set Up Savings Pots
+- Go to Savings Pots section
+- Click "Create New Pot"
+- Set your savings target
+- Start contributing to reach your goal
 
-## 📃 Deployed Contracts
+## 🔧 Development
 
-<div align="center">
-  <table>
-    <tr>
-      <th>Network</th>
-      <th>Contract Address</th>
-      <th>Status</th>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/electroneum.png" width="20"> Electrneum Mainnet</td>
-      <td><code>0x186a621d17819788c9aa170065ff3bbEEF37E7B7</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/electroneum.png" width="20"> Electrneum Testnet</td>
-      <td><code>0xC27106b03AadbFFec555C64F461784fCE850A51b</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/educhain.png" width="20"> Educhain Testnet</td>
-      <td><code>0x03c4fb7563e593ca0625C1c64959AC56081785cE</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/ancient8.png" width="20"> Ancient8 Testnet</td>
-      <td><code>0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/neox.png" width="20"> NeoX Testnet</td>
-      <td><code>0xF93132d75c20EfeD556EC2Bc5aC777750665D3a9</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/mantle.png" width="20"> Mantle Testnet</td>
-      <td><code>0x74689f77e03D8213DF5037b681F05b80bAAe3504</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/kaia.png" width="20"> KAIA Testnet</td>
-      <td><code>0xca36dd890f987edce1d6d7c74fb9df627c216bf6</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/telos.png" width="20"> Telos Testnet</td>
-      <td><code>0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/linea.png" width="20"> Linea Testnet</td>
-      <td><code>0xd150d34976Ac00D5e892aDFE565ba47de11c2656</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/crossfi.png" width="20"> CrossFi Testnet</td>
-      <td><code>0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6</code></td>
-      <td>✅ Active</td>
-    </tr>
-    <tr>
-      <td><img src="/public/chains/creator.png" width="20"> Creator Testnet</td>
-      <td><code>0xCa36dD890F987EDcE1D6D7C74Fb9df627c216BF6</code></td>
-      <td>✅ Active</td>
-    </tr>
-  </table>
-</div>
+### Project Structure
+```
+src/
+├── app/                    # Next.js App Router pages
+│   ├── dashboard/         # Main dashboard pages
+│   ├── group-payments/    # Group payment pages
+│   ├── transfer/          # Transfer pages
+│   └── savings-pots/      # Savings pot pages
+├── components/            # Reusable React components
+├── context/              # React context providers
+├── hooks/                # Custom React hooks
+├── types/                # TypeScript type definitions
+└── utils/                # Utility functions
+    ├── contract.ts       # Smart contract interactions
+    ├── groupList.ts      # Group payment utilities
+    ├── savings.ts        # Savings pot utilities
+    └── deployments/      # Contract deployment addresses
+```
 
-## 🎬 Demo
+### Key Components
+- **WalletContext**: Manages wallet connection and state
+- **ChainSelector**: Network switching interface
+- **QRScanner**: QR code scanning functionality
+- **DashboardSidebar**: Navigation sidebar
 
-See ProtectedPay in action:
+### Smart Contract Integration
+- **Contract Utility**: Centralized smart contract interaction layer
+- **Event Monitoring**: Real-time blockchain event tracking
+- **Chunked Log Queries**: Efficient historical data retrieval
+- **Multi-Chain Support**: Network-specific contract deployments
 
-<div align="center">
-  <a href="https://youtu.be/TJgnpVpa51c?si=ojjzXsVgQBj_BSGN">
-    <img src="https://img.youtube.com/vi/TJgnpVpa51c/0.jpg" alt="ProtectedPay Demo Video" width="500px">
-  </a>
-  <p><b>Click to watch the demo video</b></p>
-</div>
+## 🔒 Security Features
+
+- **Non-Custodial**: Users maintain full control of their funds
+- **Escrow Protection**: Funds held securely until claimed
+- **Smart Contract Audits**: Rigorous security testing
+- **Private Key Security**: Environment variables properly managed
+- **Transaction Validation**: Comprehensive input validation
+- **Error Handling**: Graceful error management and user feedback
+
+## 🧪 Testing
+
+### Unit Tests
+```bash
+npm run test
+```
+
+### Integration Tests
+```bash
+npm run test:integration
+```
+
+### Smart Contract Tests
+```bash
+cd contracts
+forge test
+```
+
+## 📊 Performance Optimizations
+
+- **Chunked Log Queries**: Prevents RPC timeout issues
+- **Event-Driven Updates**: Real-time data synchronization
+- **Lazy Loading**: Optimized component loading
+- **Caching**: Efficient data caching strategies
+- **Bundle Optimization**: Minimized JavaScript bundles
+
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **"Function not exported" errors**
+   - Clear Next.js cache: `rm -rf .next`
+   - Restart development server
+
+2. **Wallet connection issues**
+   - Ensure MetaMask is unlocked
+   - Check network configuration
+   - Verify RPC URLs in environment variables
+
+3. **Transaction failures**
+   - Check sufficient gas fees
+   - Verify network compatibility
+   - Ensure contract addresses are correct
+
+4. **Group payments not showing**
+   - Use the new `getUserGroupPayments` utility
+   - Check blockchain event logs
+   - Verify deployment addresses
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feature/amazing-feature`
+3. Commit your changes: `git commit -m 'Add amazing feature'`
+4. Push to the branch: `git push origin feature/amazing-feature`
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Ethers.js** for Ethereum interaction
+- **Wagmi** for React hooks
+- **RainbowKit** for wallet connection UI
+- **Next.js** for the React framework
+- **Tailwind CSS** for styling
+- **Framer Motion** for animations
 
 ## 📞 Support
 
-Need assistance or have questions? We're here to help:
+For support, questions, or contributions:
+
+- **Issues**: [GitHub Issues](https://github.com/guptashrey458/Blockchain-Payement/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/guptashrey458/Blockchain-Payement/discussions)
 
 ---
 
 <div align="center">
-  <p>© 2025 ProtectedPay</p>
-  <h3>Revolutionizing secure multi-chain asset management</h3>
+  <h3>🚀 Revolutionizing secure multi-chain asset management</h3>
+  <p>Built with ❤️ for the decentralized future</p>
 </div>
