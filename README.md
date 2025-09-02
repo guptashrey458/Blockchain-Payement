@@ -13,7 +13,7 @@
 - [Features](#-features)
 - [Supported Blockchains](#-supported-blockchains)
 - [How It Works](#-how-it-works)
-- [User Interface](#-user-interface)
+
 - [Security](#-security)
 - [Deployed Contracts](#-deployed-contracts)
 - [Demo](#-demo)
@@ -136,31 +136,7 @@ ProtectedPay operates seamlessly across multiple blockchains, delivering consist
 3. **Yield Option**: Opt to earn yield on your savings, helping grow both your funds and the chain's TVL
 4. **Flexible Access**: Withdraw partially or completely whenever needed
 
-## 💻 User Interface
 
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/c87a5393-76dd-4cde-9895-80481511cc2c" width="700px">
-  <p><i>Modern, intuitive interface with glassmorphism design</i></p>
-</div>
-
-### Design Philosophy
-
-- **Chain-Responsive**: UI themes adapt to the selected blockchain
-- **Glassmorphism**: Modern, clean aesthetics with depth and transparency
-- **Responsive Layout**: Perfect experience on any device
-- **Intuitive Navigation**: Easily access all features with minimal learning curve
-
-### Dashboard Experience
-
-<div align="center">
-  <img src="https://github.com/user-attachments/assets/21ce5262-c766-4a5a-bc5a-4b10f776188b" width="700px">
-  <p><i>Comprehensive dashboard with multi-chain activity tracking</i></p>
-</div>
-
-- **Activity Feed**: Real-time updates across all chains
-- **Asset Overview**: Quick view of balances on each network
-- **Status Indicators**: Clear visual cues for transaction states
-- **Network Switching**: Seamlessly change blockchains within the interface
 
 ## 🔒 Security
 
