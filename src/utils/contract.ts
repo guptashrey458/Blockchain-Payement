@@ -680,6 +680,60 @@ export const getSavingsPotDetails = async (signerOrProvider: SignerOrProvider, p
   };
 };
 
+// --- GROUP PAYMENTS: discover a user's pools from events, then load details ---
+
+/** Return pool ids you created and you contributed to (deduped). */
+export const listUserGroupPaymentIds = async (
+  sp: ethers.Signer | ethers.providers.Provider,
+  user: string,
+  fromBlock = 0, // tweak if you want to start later
+) => {
+  const gp = await getGroupPool(sp);
+  const prov = ethers.Signer.isSigner(sp) ? sp.provider! : sp;
+
+  // Events
+  const createdFilter = gp.filters.PoolCreated(null, user);                  // (id indexed, creator indexed)
+  const contribFilter = gp.filters.Contributed(null, user);                  // (id indexed, from indexed)
+
+  const [createdLogs, contribLogs] = await Promise.all([
+    prov.getLogs({ ...createdFilter, fromBlock, toBlock: 'latest' }),
+    prov.getLogs({ ...contribFilter, fromBlock, toBlock: 'latest' }),
+  ]);
+
+  const createdIds = new Set<number>();
+  for (const log of createdLogs) {
+    const parsed = gp.interface.parseLog(log);
+    const id: ethers.BigNumber = parsed.args.id;
+    createdIds.add(id.toNumber());
+  }
+
+  const participatedIds = new Set<number>();
+  for (const log of contribLogs) {
+    const parsed = gp.interface.parseLog(log);
+    const id: ethers.BigNumber = parsed.args.id;
+    // avoid duplicates; if you created it, it's already in createdIds
+    if (!createdIds.has(id.toNumber())) participatedIds.add(id.toNumber());
+  }
+
+  return {
+    created: Array.from(createdIds),
+    participated: Array.from(participatedIds),
+    all: Array.from(new Set<number>([...Array.from(createdIds), ...Array.from(participatedIds)])),
+  };
+};
+
+/** Load full details for the user's group payments (for History UI). */
+export const getUserGroupPayments = async (
+  sp: ethers.Signer | ethers.providers.Provider,
+  user: string,
+  fromBlock = 0,
+) => {
+  const ids = await listUserGroupPaymentIds(sp, user, fromBlock);
+  const details = await Promise.all(ids.all.map((id) => getPool(sp, id)));
+  // Attach id so UI can reference it
+  return details.map((d, i) => ({ id: ids.all[i], ...d }));
+};
+
 // Error handling
 export const handleContractError = (error: unknown, chainId?: number): string => {
   if (error instanceof Error) {
