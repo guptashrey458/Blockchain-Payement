@@ -35,7 +35,7 @@ export async function listUserPotIds(
     const parsed = pot.interface.parseLog(log);
     ids.add(parsed.args.id.toNumber());
   }
-  return [...ids];
+  return Array.from(ids);
 }
 
 export async function getPot(

@@ -441,12 +441,27 @@ export const refundTransfer = async (signer: ethers.Signer, id: number) =>
   refundEscrow(signer, id);
 
 // Reads (names your UI might call)
-export const getTransferDetails = getTransfer;
+export const getTransferDetails = async (signerOrProvider: SignerOrProvider, id: string | number) => {
+  const transfer = await getTransfer(signerOrProvider, typeof id === 'string' ? parseInt(id) : id);
+  return {
+    ...transfer,
+    recipient: decodeRecipient(transfer.rtype, transfer.recipientRaw),
+    timestamp: 0, // Will be populated from events if needed
+    remarks: '', // Will be populated from events if needed
+    status: transfer.claimed ? 'Claimed' : 'Pending'
+  };
+};
+
+// Add missing export
+export const getPaymentAmount = async (signerOrProvider: SignerOrProvider, paymentId: string) => {
+  const pool = await getPool(signerOrProvider, parseInt(paymentId));
+  return pool.target;
+};
 
 export const getPendingTransfers = async (signerOrProvider: SignerOrProvider, userAddress: string) => {
   const allTransfers = await getUserTransfers(signerOrProvider, userAddress);
   // Return only pending transfers (status = 0)
-  return allTransfers.filter(transfer => transfer.status === 0).map(transfer => transfer.id.toString());
+  return allTransfers.filter(transfer => transfer.status === 'Pending').map(transfer => transfer.id.toString());
 };
 
 // User management
@@ -532,7 +547,7 @@ export const getUserTransfers = async (
   if (byId.size === 0) return [];
 
   // 3) For each id, read storage + look for Claim/Refund events
-  const ids = [...byId.keys()];
+  const ids = Array.from(byId.keys());
 
   // Query Claim/Refund logs for these ids (id is indexed)
   const claimedLogs = await escrow.queryFilter(escrow.filters.Claimed(null), start, end);
@@ -594,7 +609,7 @@ export const createGroupPayment = async (
   const now = Math.floor(Date.now() / 1000);
   const oneWeek = 7 * 24 * 60 * 60; // 7 days
   return createGroupPool(signer, {
-    token: null, // ETH
+    token: undefined, // ETH
     recipient,
     targetETH: formatEth(targetAmount),
     deadline: now + oneWeek, // 7 days from now

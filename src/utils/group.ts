@@ -50,7 +50,7 @@ export async function listUserGroupPaymentIds(
     if (!created.has(id)) participated.add(id);
   }
 
-  return { created: [...created], participated: [...participated], all: [...new Set([...created, ...participated])] };
+  return { created: Array.from(created), participated: Array.from(participated), all: Array.from(new Set([...Array.from(created), ...Array.from(participated)])) };
 }
 
 export async function getGroupPayment(
