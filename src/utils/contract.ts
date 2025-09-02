@@ -591,11 +591,13 @@ export const createGroupPayment = async (
 ) => {
   const amountBN = parseEth(amount);
   const targetAmount = amountBN.mul(ethers.BigNumber.from(numParticipants));
+  const now = Math.floor(Date.now() / 1000);
+  const oneWeek = 7 * 24 * 60 * 60; // 7 days
   return createGroupPool(signer, {
     token: null, // ETH
     recipient,
     targetETH: formatEth(targetAmount),
-    deadline: Math.floor(Date.now() / 1000) + 86400, // 24 hours
+    deadline: now + oneWeek, // 7 days from now
     metadata: remarks
   });
 };
