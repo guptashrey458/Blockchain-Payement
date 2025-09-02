@@ -422,8 +422,8 @@ export const sendToUsername = async (
 };
 
 // Claim/refund (map to escrow functions)
-export const claimTransferById = async (signer: ethers.Signer, id: number) =>
-  claimEscrow(signer, id);
+export const claimTransferById = async (signer: ethers.Signer, id: string | number) =>
+  claimEscrow(signer, typeof id === 'string' ? parseInt(id) : id);
 
 export const claimTransferByAddress = async (signer: ethers.Signer, senderAddress: string) => {
   // This is a simplified version - you might need to implement proper logic
@@ -437,8 +437,8 @@ export const claimTransferByUsername = async (signer: ethers.Signer, senderUsern
   throw new Error('claimTransferByUsername not implemented - use claimTransferById instead');
 };
 
-export const refundTransfer = async (signer: ethers.Signer, id: number) =>
-  refundEscrow(signer, id);
+export const refundTransfer = async (signer: ethers.Signer, id: string | number) =>
+  refundEscrow(signer, typeof id === 'string' ? parseInt(id) : id);
 
 // Reads (names your UI might call)
 export const getTransferDetails = async (signerOrProvider: SignerOrProvider, id: string | number) => {
