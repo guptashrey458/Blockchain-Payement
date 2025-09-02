@@ -1,6 +1,0 @@
-PRIVATE_KEY=1e13acd53252725015d4a7ddb5af4826c8e8080ae9dd31aaaabf9dc1729df283
-LINEA_RPC=https://rpc.sepolia.linea.build
-MANTLE_RPC=https://rpc.testnet.mantle.xyz
-KAIA_RPC=https://public-en-kairos.node.kaia.io
-TELOS_RPC=https://rpc.testnet.telos.net
-
